@@ -22,28 +22,28 @@
       ></v-progress-circular>
 
       <div v-if="tasks && tasks.length > 0">
-      <div v-for="task in tasks" :key="task.id" class="task-item">
-        <span :class="{ completed: task.completed }">{{ task.title }}</span>
-        <div>
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
+        <div v-for="task in tasks" :key="task.id" class="task-item">
+          <span :class="{ completed: task.completed }">{{ task.title }}</span>
+          <div>
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
               <span @click="completeTask(task.id)" class="btn complete-btn" v-bind="attrs" v-on="on">
                 <i class="ph ph-check"></i>
               </span>
-            </template>
-            <span class="custom-tooltip">Complete task</span>
-          </v-tooltip>
+              </template>
+              <span class="custom-tooltip">Complete task</span>
+            </v-tooltip>
 
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
               <span @click="openDeleteDialog(task.id)" class="btn delete-btn" v-bind="attrs" v-on="on">
                 <i class="ph ph-trash"></i>
               </span>
-            </template>
-            <span class="custom-tooltip">Delete task</span>
-          </v-tooltip>
+              </template>
+              <span class="custom-tooltip">Delete task</span>
+            </v-tooltip>
+          </div>
         </div>
-      </div>
       </div>
       <div v-else>
         Your to-do list is empty. Add a new task to start organizing your to-dos.
@@ -102,6 +102,7 @@
 <script>
 
 import {TasksService} from "@/services/TasksService";
+import {mapActions} from "vuex";
 
 export default {
   name: 'TasksList',
@@ -127,6 +128,7 @@ export default {
     };
   },
   methods: {
+    ...mapActions('snackbar', ['showSnackbar']),
     async getTasks() {
       try {
         this.loading = true;
@@ -134,6 +136,7 @@ export default {
         this.tasks = response.data.sort((a, b) => a.completed - b.completed);
       } catch (error) {
         this.error = error;
+        this.showSnackbar({ text: 'Something went wrong.', color: 'error' });
       } finally {
         this.loading = false;
       }
@@ -152,8 +155,10 @@ export default {
       try {
         await TasksService.deleteTask(id);
         this.tasks = this.tasks.filter(task => task.id !== id);
+        this.showSnackbar({ text: 'Task deleted successfully', color: 'success' });
       } catch (error) {
         this.error = error;
+        this.showSnackbar({ text: 'Something went wrong.', color: 'error' });
       } finally {
         this.loading = false;
       }
@@ -197,20 +202,17 @@ export default {
         this.addTaskDialog = false;
         this.newTaskTitle = '';
         this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
-        this.showSnackbar('Task successfully saved');
+        this.showSnackbar({ text: 'Task saved successfully', color: 'success' });
 
       } catch (error) {
         this.error = error;
+        this.showSnackbar({ text: 'Something went wrong.', color: 'error' });
       } finally {
         this.loading = false;
       }
 
     },
 
-    showSnackbar(message) {
-      this.snackbar.message = message;
-      this.snackbar.visible = true;
-    },
   },
 }
 </script>

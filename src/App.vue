@@ -1,15 +1,18 @@
 <template>
-  <div id="app" data-app>
+  <v-app>
     <TasksList/>
-  </div>
+    <GlobalSnackbar />
+  </v-app>
 </template>
 
 <script>
 import TasksList from "@/components/TasksList.vue";
+import GlobalSnackbar from "@/components/GlobalSnackbar.vue";
 
 export default {
   name: 'App',
   components: {
+    GlobalSnackbar,
     TasksList,
   }
 }
