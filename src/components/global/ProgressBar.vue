@@ -2,9 +2,9 @@
   <v-progress-circular
       :size="size"
       :color="color"
-      :indeterminate="indeterminate"
+      indeterminate
       class="progress-bar"
-      :aria-label="name">
+  >
   </v-progress-circular>
 </template>
 
@@ -14,17 +14,18 @@ export default {
   props: {
     size: {
       type: Number,
-      default: 50,
+      default: 50
     },
     color: {
       type: String,
-      default: 'primary',
-    },
-    indeterminate: {
-      type: Boolean,
-      default: true,
-    },
-  },
+      default: 'primary'
+    }
+  }
 };
-
 </script>
+
+<style scoped>
+.progress-bar {
+  margin: auto;
+}
+</style>
