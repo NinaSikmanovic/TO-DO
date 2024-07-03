@@ -55,7 +55,7 @@
     <NewTaskDialog
         v-if="newTaskDialog"
         :is-open="newTaskDialog"
-        :loading="loading"
+        :loading="saving"
         @close="closeNewTaskDialog"
         @save-task="saveTask"
     />
@@ -81,7 +81,8 @@ export default {
     return {
       deleteOrganisationModal: false,
       tasks: [],
-      loading: true,
+      loading: false,
+      saving: false,
       error: null,
       taskId: null,
       confirmDialog: false,
@@ -163,28 +164,26 @@ export default {
 
     async saveTask(taskTitle) {
 
+      this.saving = true;
       const body = {
         title: taskTitle
       }
 
       try {
         await TasksService.saveTask(body);
-
         const newTask = {
           id: this.tasks.length + 1,
           title: taskTitle,
           completed: false,
         };
-
         this.tasks.push(newTask);
         this.newTaskDialog = false;
         this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
         this.showSnackbar({text: 'Task saved successfully', color: 'success'});
-
       } catch (error) {
         this.showSnackbar({text: 'Something went wrong.', color: 'error'});
       } finally {
-        this.loading = false;
+        this.saving = false;
       }
     },
   },

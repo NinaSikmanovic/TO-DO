@@ -26,8 +26,7 @@
                 class="btn confirm-btn"
                 :disabled="invalid"
                 @click="handleSubmit(saveTask)"
-                :loading="loading"
-            >
+                :loading="loading">
               Save
             </v-btn>
           </v-card-actions>
