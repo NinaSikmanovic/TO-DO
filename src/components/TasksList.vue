@@ -5,7 +5,7 @@
         <div class="todo-title"> TO DO:</div>
         <v-tooltip top>
           <template v-slot:activator="{ on, attrs }">
-            <span @click="openAddTaskDialog" class="btn plus-btn" v-bind="attrs" v-on="on">
+            <span @click="openNewTaskDialog" class="btn plus-btn" v-bind="attrs" v-on="on">
               <i class="ph ph-plus-circle"></i>
             </span>
           </template>
@@ -13,13 +13,7 @@
         </v-tooltip>
       </div>
 
-      <v-progress-circular
-          v-if="loading"
-          :size="50"
-          color="primary"
-          indeterminate
-          class="progress-bar"
-      ></v-progress-circular>
+      <ProgressBar v-if="loading"/>
 
       <div v-if="tasks && tasks.length > 0">
         <div v-for="task in tasks" :key="task.id" class="task-item">
@@ -36,7 +30,7 @@
 
             <v-tooltip top>
               <template v-slot:activator="{ on, attrs }">
-              <span @click="openDeleteDialog(task.id)" class="btn delete-btn" v-bind="attrs" v-on="on">
+              <span @click="openConfirmDialog(task.id)" class="btn delete-btn" v-bind="attrs" v-on="on">
                 <i class="ph ph-trash"></i>
               </span>
               </template>
@@ -50,51 +44,21 @@
       </div>
     </div>
 
-    <v-dialog v-model="dialog.visible" max-width="290" persistent>
-      <v-card>
-        <v-card-title class="dialog-title">Are you sure you want to delete this task?</v-card-title>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn @click="dialog.visible = false">Cancel</v-btn>
-          <v-btn class="btn confirm-btn" @click="confirmDelete">Yes</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmDialog
+        v-if="confirmDialog"
+        :is-open="confirmDialog"
+        :message="deleteTaskMessage"
+        @close="closeConfirmDialog"
+        @confirm="confirmDelete"
+    />
 
-    <v-dialog v-model="addTaskDialog" max-width="500">
-      <v-card>
-        <v-card-title class="headline">Add New Task</v-card-title>
-        <validation-observer v-slot="{ invalid, handleSubmit }" ref="form">
-          <v-form @submit.prevent="handleSubmit(saveTask)">
-            <v-card-text>
-              <validation-provider
-                  name="Task title"
-                  rules="required|max:150"
-                  v-slot="{ errors, handleChange }">
-                <v-text-field
-                    v-model="newTaskTitle"
-                    label="Task title"
-                    :error-messages="errors"
-                    @input="handleChange"
-                ></v-text-field>
-              </validation-provider>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn @click="addTaskDialog = false">Cancel</v-btn>
-              <v-btn
-                  class="btn confirm-btn"
-                  :disabled="invalid"
-                  @click="handleSubmit(saveTask)"
-                  :loading="loading"
-              >
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-form>
-        </validation-observer>
-      </v-card>
-    </v-dialog>
+    <NewTaskDialog
+        v-if="newTaskDialog"
+        :is-open="newTaskDialog"
+        :loading="loading"
+        @close="closeNewTaskDialog"
+        @save-task="saveTask"
+    />
 
   </v-container>
 </template>
@@ -103,9 +67,13 @@
 
 import {TasksService} from "@/services/TasksService";
 import {mapActions} from "vuex";
+import ProgressBar from "@/components/ProgressBar.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import NewTaskDialog from "@/components/NewTaskDialog.vue";
 
 export default {
   name: 'TasksList',
+  components: {NewTaskDialog, ConfirmDialog, ProgressBar},
   created() {
     this.getTasks();
   },
@@ -115,16 +83,15 @@ export default {
       tasks: [],
       loading: true,
       error: null,
-      dialog: {
-        visible: false,
-        taskId: null,
-      },
-      addTaskDialog: false,
+      taskId: null,
+      confirmDialog: false,
+      newTaskDialog: false,
       newTaskTitle: '',
       snackbar: {
         visible: false,
         message: '',
       },
+      deleteTaskMessage: "Are you sure you want to delete this task?"
     };
   },
   methods: {
@@ -136,7 +103,7 @@ export default {
         this.tasks = response.data.sort((a, b) => a.completed - b.completed);
       } catch (error) {
         this.error = error;
-        this.showSnackbar({ text: 'Something went wrong.', color: 'error' });
+        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
       } finally {
         this.loading = false;
       }
@@ -155,64 +122,68 @@ export default {
       try {
         await TasksService.deleteTask(id);
         this.tasks = this.tasks.filter(task => task.id !== id);
-        this.showSnackbar({ text: 'Task deleted successfully', color: 'success' });
+        this.showSnackbar({text: 'Task deleted successfully', color: 'success'});
       } catch (error) {
         this.error = error;
-        this.showSnackbar({ text: 'Something went wrong.', color: 'error' });
+        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
       } finally {
         this.loading = false;
       }
 
     },
 
-    openDeleteDialog(taskId) {
-      this.dialog.visible = true;
-      this.dialog.taskId = taskId;
+    openConfirmDialog(taskId) {
+      this.confirmDialog = true;
+      this.taskId = taskId;
+    },
+
+    closeConfirmDialog() {
+      this.confirmDialog = false;
     },
 
     confirmDelete() {
-      this.deleteTask(this.dialog.taskId);
-      this.dialog.visible = false;
+      this.deleteTask(this.taskId);
+      this.confirmDialog = false;
     },
 
-    openAddTaskDialog() {
-      this.newTaskTitle = "";
-      this.$refs.form?.reset();
-      this.addTaskDialog = true;
+    openNewTaskDialog() {
+      this.newTaskDialog = true;
     },
 
-    async saveTask() {
+    closeNewTaskDialog() {
+      this.newTaskDialog = false;
+    },
+
+    async saveTask(taskTitle) {
 
       const body = {
-        title: this.newTaskTitle
+        title: taskTitle
       }
 
       try {
         await TasksService.saveTask(body);
 
-        if (this.newTaskTitle.trim() === '') return;
+        if (taskTitle.trim() === '') return;
 
         const newTask = {
           id: this.tasks.length + 1,
-          title: this.newTaskTitle,
+          title: taskTitle,
           completed: false,
         };
 
         this.tasks.push(newTask);
-        this.addTaskDialog = false;
+        this.newTaskDialog = false;
         this.newTaskTitle = '';
         this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
-        this.showSnackbar({ text: 'Task saved successfully', color: 'success' });
+        this.showSnackbar({text: 'Task saved successfully', color: 'success'});
 
       } catch (error) {
         this.error = error;
-        this.showSnackbar({ text: 'Something went wrong.', color: 'error' });
+        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
       } finally {
         this.loading = false;
       }
-
     },
-
   },
 }
 </script>
@@ -289,10 +260,6 @@ export default {
 
 .plus-btn {
   float: right;
-}
-
-.dialog-title {
-  font-size: 16px !important;
 }
 
 .todo-title {
