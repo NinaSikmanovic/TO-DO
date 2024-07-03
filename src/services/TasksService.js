@@ -14,4 +14,8 @@ export const TasksService = {
     async saveTask(data) {
         return axios.post(`${BASE_URL}`, data);
     },
+
+    async completeTask(data) {
+        return axios.put(`${BASE_URL}/${data.id}`, data);
+    },
 };

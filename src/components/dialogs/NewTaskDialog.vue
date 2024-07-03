@@ -1,5 +1,7 @@
 <template>
-  <v-dialog v-model="dialogVisible" max-width="500">
+  <v-dialog v-model="dialogVisible"
+            max-width="500"
+            @click:outside="closeDialog">
     <v-card>
       <v-card-title>Add new task</v-card-title>
       <validation-observer v-slot="{ invalid, handleSubmit }" ref="form">
@@ -50,6 +52,10 @@ export default {
   methods: {
     saveTask() {
       this.$emit('save-task', this.newTaskTitle);
+    },
+    closeDialog() {
+      this.dialogVisible = false;
+      this.$emit('close');
     },
   },
 };

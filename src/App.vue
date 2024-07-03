@@ -1,18 +1,18 @@
 <template>
   <v-app>
     <TasksList/>
-    <GlobalSnackbar />
+    <SystemNotification/>
   </v-app>
 </template>
 
 <script>
-import TasksList from "@/components/TasksList.vue";
-import GlobalSnackbar from "@/components/GlobalSnackbar.vue";
+import TasksList from "@/components/tasks/TasksList.vue";
+import SystemNotification from "@/components/global/SystemNotification.vue";
 
 export default {
   name: 'App',
   components: {
-    GlobalSnackbar,
+    SystemNotification,
     TasksList,
   }
 }

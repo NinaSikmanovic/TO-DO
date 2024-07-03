@@ -1,8 +1,8 @@
 <template>
   <v-container>
-    <div class="tasks-list">
-      <div class="top-section">
-        <div class="todo-title"> TO DO:</div>
+    <div class="tasks-list-container">
+      <div class="tasks-top-section">
+        <div class="tasks-title"> TO DO:</div>
         <v-tooltip top>
           <template v-slot:activator="{ on, attrs }">
             <span @click="openNewTaskDialog" class="btn plus-btn" v-bind="attrs" v-on="on">
@@ -67,9 +67,9 @@
 
 import {TasksService} from "@/services/TasksService";
 import {mapActions} from "vuex";
-import ProgressBar from "@/components/ProgressBar.vue";
-import ConfirmDialog from "@/components/ConfirmDialog.vue";
-import NewTaskDialog from "@/components/NewTaskDialog.vue";
+import ProgressBar from "@/components/global/ProgressBar.vue";
+import ConfirmDialog from "@/components/dialogs/ConfirmDialog.vue";
+import NewTaskDialog from "@/components/dialogs/NewTaskDialog.vue";
 
 export default {
   name: 'TasksList',
@@ -102,20 +102,28 @@ export default {
         const response = await TasksService.getTasks();
         this.tasks = response.data.sort((a, b) => a.completed - b.completed);
       } catch (error) {
-        this.error = error;
         this.showSnackbar({text: 'Something went wrong.', color: 'error'});
       } finally {
         this.loading = false;
       }
     },
 
-    completeTask(id) {
-      const task = this.tasks.find(task => task.id === id);
-      if (task) {
-        task.completed = !task.completed;
-      }
-      this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
+    async completeTask(id) {
+      try {
+        const body = {
+          id: id,
+          completed: true
+        }
 
+        await TasksService.completeTask(body);
+        const task = this.tasks.find(task => task.id === id);
+        if (task) {
+          task.completed = !task.completed;
+        }
+        this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
+      }catch (error) {
+        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
+      }
     },
 
     async deleteTask(id) {
@@ -124,7 +132,6 @@ export default {
         this.tasks = this.tasks.filter(task => task.id !== id);
         this.showSnackbar({text: 'Task deleted successfully', color: 'success'});
       } catch (error) {
-        this.error = error;
         this.showSnackbar({text: 'Something went wrong.', color: 'error'});
       } finally {
         this.loading = false;
@@ -163,8 +170,6 @@ export default {
       try {
         await TasksService.saveTask(body);
 
-        if (taskTitle.trim() === '') return;
-
         const newTask = {
           id: this.tasks.length + 1,
           title: taskTitle,
@@ -173,12 +178,10 @@ export default {
 
         this.tasks.push(newTask);
         this.newTaskDialog = false;
-        this.newTaskTitle = '';
         this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
         this.showSnackbar({text: 'Task saved successfully', color: 'success'});
 
       } catch (error) {
-        this.error = error;
         this.showSnackbar({text: 'Something went wrong.', color: 'error'});
       } finally {
         this.loading = false;
@@ -190,7 +193,7 @@ export default {
 
 <style scoped>
 
-.tasks-list {
+.tasks-list-container {
   max-width: 80%;
   margin: 0 auto;
   padding: 1rem;
@@ -262,14 +265,14 @@ export default {
   float: right;
 }
 
-.todo-title {
+.tasks-title {
   font-size: 16px;
   font-weight: 800;
   padding-bottom: 10px;
   padding-left: 4px;
 }
 
-.top-section {
+.tasks-top-section {
   display: flex;
   justify-content: space-between;
   padding: 10px 8px;

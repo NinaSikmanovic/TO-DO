@@ -8,7 +8,7 @@
 import { mapState} from 'vuex';
 
 export default {
-  name: 'GlobalSnackbar',
+  name: 'SystemNotification',
   computed: {
     ...mapState(['snackbar']),
   },
