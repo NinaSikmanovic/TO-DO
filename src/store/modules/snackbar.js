@@ -11,10 +11,16 @@ export default {
             state.color = color;
             state.show = true;
         },
+        hideSnackbar(state) {
+            state.show = false;
+        },
     },
     actions: {
         showSnackbar({ commit }, { text, color }) {
             commit('showSnackbar', { text, color });
+        },
+        hideSnackbar({ commit }) {
+            commit('hideSnackbar');
         },
     },
     getters: {
