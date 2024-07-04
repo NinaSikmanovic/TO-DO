@@ -5,7 +5,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn @click="cancel">Cancel</v-btn>
-        <v-btn class="btn confirm-btn" @click="confirm">Yes</v-btn>
+        <v-btn class="btn confirm-btn primary" @click="confirm">Yes</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -38,6 +38,7 @@ export default {
 
 .dialog-title {
   font-size: 16px !important;
+  word-break: break-word;
 }
 
 </style>

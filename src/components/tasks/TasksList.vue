@@ -9,7 +9,7 @@
               <i class="ph ph-plus-circle"></i>
             </span>
           </template>
-          <span class="custom-tooltip">Add task</span>
+          <span class="tooltip-size">Add task</span>
         </v-tooltip>
       </div>
 
@@ -21,11 +21,20 @@
           <div>
             <v-tooltip top>
               <template v-slot:activator="{ on, attrs }">
-              <span @click="completeTask(task.id)" class="btn complete-btn" v-bind="attrs" v-on="on">
-                <i class="ph ph-check"></i>
-              </span>
+                <span v-on="on">
+                  <span
+                      @click="completeTask(task.id)"
+                      class="btn complete-btn"
+                      :class="{ 'disabled': task.completed }"
+                      v-bind="attrs"
+                      :aria-disabled="task.completed ? 'true' : 'false'">
+                        <i class="ph ph-check"></i>
+                  </span>
+                </span>
               </template>
-              <span class="custom-tooltip">Complete task</span>
+              <span class="tooltip-size">
+                {{ task.completed ? 'This task is already completed' : 'Complete task' }}
+              </span>
             </v-tooltip>
 
             <v-tooltip top>
@@ -34,7 +43,7 @@
                 <i class="ph ph-trash"></i>
               </span>
               </template>
-              <span class="custom-tooltip">Delete task</span>
+              <span class="tooltip-size">Delete task</span>
             </v-tooltip>
           </div>
         </div>
@@ -74,16 +83,11 @@ import NewTaskDialog from "@/components/dialogs/NewTaskDialog.vue";
 export default {
   name: 'TasksList',
   components: {NewTaskDialog, ConfirmDialog, ProgressBar},
-  created() {
-    this.getTasks();
-  },
   data() {
     return {
-      deleteOrganisationModal: false,
       tasks: [],
       loading: false,
       saving: false,
-      error: null,
       taskId: null,
       confirmDialog: false,
       newTaskDialog: false,
@@ -94,6 +98,9 @@ export default {
       },
       deleteTaskMessage: "Are you sure you want to delete this task?"
     };
+  },
+  created() {
+    this.getTasks();
   },
   methods: {
     ...mapActions('snackbar', ['showSnackbar']),
@@ -233,6 +240,19 @@ export default {
   color: #888;
 }
 
+.tasks-title {
+  font-size: 16px;
+  font-weight: 800;
+  padding-bottom: 10px;
+  padding-left: 4px;
+}
+
+.tasks-top-section {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 8px;
+}
+
 .btn {
   cursor: pointer;
   margin-left: 0.5rem;
@@ -259,37 +279,17 @@ export default {
   color: #c62828;
 }
 
-.confirm-btn {
-  margin-left: 8px;
-}
-
 .plus-btn {
   float: right;
 }
 
-.tasks-title {
-  font-size: 16px;
-  font-weight: 800;
-  padding-bottom: 10px;
-  padding-left: 4px;
-}
-
-.tasks-top-section {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 8px;
-}
-
-.custom-tooltip {
+.tooltip-size {
   font-size: 12px;
 }
 
-::v-deep .v-messages__message {
-  color: #f44336;
-}
-
-.progress-bar {
-  margin-left: 10px;
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 </style>

@@ -23,7 +23,7 @@
             <v-spacer></v-spacer>
             <v-btn @click="$emit('close')">Cancel</v-btn>
             <v-btn
-                class="btn confirm-btn"
+                class="btn confirm-btn primary"
                 :disabled="invalid"
                 @click="handleSubmit(saveTask)"
                 :loading="loading">
