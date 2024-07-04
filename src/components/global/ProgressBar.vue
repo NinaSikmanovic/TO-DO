@@ -26,6 +26,7 @@ export default {
 
 <style scoped>
 .progress-bar {
+  display: block;
   margin: auto;
 }
 </style>

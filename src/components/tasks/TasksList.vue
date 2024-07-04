@@ -2,10 +2,10 @@
   <v-container>
     <div class="tasks-list-container">
       <div class="tasks-top-section">
-        <div class="tasks-title"> TO DO:</div>
+        <div class="tasks-heading"> TO DO:</div>
         <v-tooltip top>
           <template v-slot:activator="{ on, attrs }">
-            <span @click="openNewTaskDialog" class="btn plus-btn" v-bind="attrs" v-on="on">
+            <span @click="openNewTaskDialog" class="btn btn-plus" v-bind="attrs" v-on="on">
               <i class="ph ph-plus-circle"></i>
             </span>
           </template>
@@ -24,7 +24,7 @@
                 <span v-on="on">
                   <span
                       @click="completeTask(task.id)"
-                      class="btn complete-btn"
+                      class="btn btn-complete"
                       :class="{ 'disabled': task.completed }"
                       v-bind="attrs"
                       :aria-disabled="task.completed ? 'true' : 'false'">
@@ -39,7 +39,7 @@
 
             <v-tooltip top>
               <template v-slot:activator="{ on, attrs }">
-              <span @click="openConfirmDialog(task.id)" class="btn delete-btn" v-bind="attrs" v-on="on">
+              <span @click="openConfirmDialog(task.id)" class="btn btn-delete" v-bind="attrs" v-on="on">
                 <i class="ph ph-trash"></i>
               </span>
               </template>
@@ -49,7 +49,9 @@
         </div>
       </div>
       <div v-else>
-        Your to-do list is empty. Add a new task to start organizing your to-dos.
+        <template v-if="!loading">
+          Your to-do list is empty. Add a new task to start organizing your to-dos.
+        </template>
       </div>
     </div>
 
@@ -74,7 +76,7 @@
 
 <script>
 
-import {TasksService} from "@/services/TasksService";
+import {TasksService} from "@/services/tasksService";
 import {mapActions} from "vuex";
 import ProgressBar from "@/components/global/ProgressBar.vue";
 import ConfirmDialog from "@/components/dialogs/ConfirmDialog.vue";
@@ -86,7 +88,7 @@ export default {
   data() {
     return {
       tasks: [],
-      loading: false,
+      loading: true,
       saving: false,
       taskId: null,
       confirmDialog: false,
@@ -104,7 +106,7 @@ export default {
   },
   methods: {
     ...mapActions('snackbar', ['showSnackbar']),
-    async getTasks() {
+    getTasks() {
 
       TasksService.getTasks()
           .then((response) => {
@@ -118,7 +120,7 @@ export default {
           });
     },
 
-    async completeTask(id) {
+    completeTask(id) {
 
       const body = {
         id: id,
@@ -137,7 +139,7 @@ export default {
           })
     },
 
-    async deleteTask(id) {
+    deleteTask(id) {
 
       TasksService.deleteTask(id)
           .then(() => {
@@ -149,7 +151,7 @@ export default {
           })
     },
 
-    async saveTask(taskTitle) {
+    saveTask(taskTitle) {
 
       this.saving = true;
       const body = {
@@ -240,7 +242,7 @@ export default {
   color: #888;
 }
 
-.tasks-title {
+.tasks-heading {
   font-size: 16px;
   font-weight: 800;
   padding-bottom: 10px;
@@ -263,23 +265,23 @@ export default {
   }
 }
 
-.complete-btn {
+.btn-complete {
   color: #4caf50;
 }
 
-.complete-btn:hover {
+.btn-complete:hover {
   color: #388e3c;
 }
 
-.delete-btn {
+.btn-delete {
   color: #f44336;
 }
 
-.delete-btn:hover {
+.btn-delete:hover {
   color: #c62828;
 }
 
-.plus-btn {
+.btn-plus {
   float: right;
 }
 
