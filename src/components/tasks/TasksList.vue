@@ -110,7 +110,8 @@ export default {
 
       TasksService.getTasks()
           .then((response) => {
-            this.tasks = response.data.sort((a, b) => a.completed - b.completed);
+            this.tasks = response.data;
+            this.sortTasks();
           })
           .catch(() => {
             this.showSnackbar({text: 'An unexpected error has occurred. Please try again.', color: 'error'});
@@ -132,7 +133,7 @@ export default {
             if (task) {
               task.completed = !task.completed;
             }
-            this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
+            this.sortTasks();
           })
           .catch(() => {
             this.showSnackbar({text: 'An unexpected error has occurred. Please try again.', color: 'error'});
@@ -159,14 +160,9 @@ export default {
       }
       TasksService.saveTask(body)
           .then(() => {
-            const newTask = {
-              id: this.tasks.length + 1,
-              title: taskTitle,
-              completed: false,
-            };
-            this.tasks.push(newTask);
+            this.addTaskToList(taskTitle);
             this.newTaskDialog = false;
-            this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
+            this.sortTasks();
             this.showSnackbar({text: 'Task saved successfully', color: 'success'});
           })
           .catch(() => {
@@ -175,6 +171,19 @@ export default {
           .finally(() => {
             this.saving = false;
           });
+    },
+
+    sortTasks() {
+      this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
+    },
+
+    addTaskToList(taskTitle) {
+      const newTask = {
+        id: this.tasks.length + 1,
+        title: taskTitle,
+        completed: false,
+      };
+      this.tasks.push(newTask);
     },
 
     openConfirmDialog(taskId) {
