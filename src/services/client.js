@@ -1,14 +1,7 @@
 import axios from "axios";
 
 export function getHttpClient(url, method = 'GET', data = null) {
-
-    let httpClient = axios.create({
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Origin, Content-Type, X-Auth-Token',
-        },
-    });
+    let httpClient = axios.create();
 
     switch (method.toUpperCase()) {
         case 'GET':
@@ -18,7 +11,7 @@ export function getHttpClient(url, method = 'GET', data = null) {
         case 'PUT':
             return httpClient.put(url, data);
         case 'DELETE':
-            return httpClient.delete(url, data);
+            return httpClient.delete(url, { data: data });
         default:
             return httpClient.get(url);
     }

@@ -10,7 +10,7 @@ export const TasksService = {
 
     deleteTask(id) {
         let url = BASE_URL + "/todos/" + id;
-        return getHttpClient(url, 'DELETE');
+        return getHttpClient(url, "DELETE");
     },
 
     saveTask(data) {

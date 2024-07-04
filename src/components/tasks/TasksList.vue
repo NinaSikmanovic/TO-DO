@@ -107,7 +107,6 @@ export default {
   methods: {
     ...mapActions('snackbar', ['showSnackbar']),
     getTasks() {
-
       TasksService.getTasks()
           .then((response) => {
             this.tasks = response.data;
@@ -122,7 +121,6 @@ export default {
     },
 
     completeTask(id) {
-
       const body = {
         id: id,
         completed: true
@@ -141,7 +139,6 @@ export default {
     },
 
     deleteTask(id) {
-
       TasksService.deleteTask(id)
           .then(() => {
             this.tasks = this.tasks.filter(task => task.id !== id);
@@ -153,7 +150,6 @@ export default {
     },
 
     saveTask(taskTitle) {
-
       this.saving = true;
       const body = {
         title: taskTitle
@@ -179,7 +175,7 @@ export default {
 
     addTaskToList(taskTitle) {
       const newTask = {
-        id: this.tasks.length + 1,
+        id: Date.now(),
         title: taskTitle,
         completed: false,
       };
