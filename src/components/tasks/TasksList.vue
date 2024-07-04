@@ -98,46 +98,74 @@ export default {
   methods: {
     ...mapActions('snackbar', ['showSnackbar']),
     async getTasks() {
-      try {
-        this.loading = true;
-        const response = await TasksService.getTasks();
-        this.tasks = response.data.sort((a, b) => a.completed - b.completed);
-      } catch (error) {
-        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
-      } finally {
-        this.loading = false;
-      }
+
+      TasksService.getTasks()
+          .then((response) => {
+            this.tasks = response.data.sort((a, b) => a.completed - b.completed);
+          })
+          .catch(() => {
+            this.showSnackbar({text: 'An unexpected error has occurred. Please try again.', color: 'error'});
+          })
+          .finally(() => {
+            this.loading = false;
+          });
     },
 
     async completeTask(id) {
-      try {
-        const body = {
-          id: id,
-          completed: true
-        }
 
-        await TasksService.completeTask(body);
-        const task = this.tasks.find(task => task.id === id);
-        if (task) {
-          task.completed = !task.completed;
-        }
-        this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
-      }catch (error) {
-        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
+      const body = {
+        id: id,
+        completed: true
       }
+      TasksService.completeTask(body)
+          .then(() => {
+            const task = this.tasks.find(task => task.id === id);
+            if (task) {
+              task.completed = !task.completed;
+            }
+            this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
+          })
+          .catch(() => {
+            this.showSnackbar({text: 'An unexpected error has occurred. Please try again.', color: 'error'});
+          })
     },
 
     async deleteTask(id) {
-      try {
-        await TasksService.deleteTask(id);
-        this.tasks = this.tasks.filter(task => task.id !== id);
-        this.showSnackbar({text: 'Task deleted successfully', color: 'success'});
-      } catch (error) {
-        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
-      } finally {
-        this.loading = false;
-      }
 
+      TasksService.deleteTask(id)
+          .then(() => {
+            this.tasks = this.tasks.filter(task => task.id !== id);
+            this.showSnackbar({text: 'Task deleted successfully', color: 'success'});
+          })
+          .catch(() => {
+            this.showSnackbar({text: 'An unexpected error has occurred. Please try again.', color: 'error'});
+          })
+    },
+
+    async saveTask(taskTitle) {
+
+      this.saving = true;
+      const body = {
+        title: taskTitle
+      }
+      TasksService.saveTask(body)
+          .then(() => {
+            const newTask = {
+              id: this.tasks.length + 1,
+              title: taskTitle,
+              completed: false,
+            };
+            this.tasks.push(newTask);
+            this.newTaskDialog = false;
+            this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
+            this.showSnackbar({text: 'Task saved successfully', color: 'success'});
+          })
+          .catch(() => {
+            this.showSnackbar({text: 'An unexpected error has occurred. Please try again.', color: 'error'});
+          })
+          .finally(() => {
+            this.saving = false;
+          });
     },
 
     openConfirmDialog(taskId) {
@@ -160,31 +188,6 @@ export default {
 
     closeNewTaskDialog() {
       this.newTaskDialog = false;
-    },
-
-    async saveTask(taskTitle) {
-
-      this.saving = true;
-      const body = {
-        title: taskTitle
-      }
-
-      try {
-        await TasksService.saveTask(body);
-        const newTask = {
-          id: this.tasks.length + 1,
-          title: taskTitle,
-          completed: false,
-        };
-        this.tasks.push(newTask);
-        this.newTaskDialog = false;
-        this.tasks = this.tasks.sort((a, b) => a.completed - b.completed);
-        this.showSnackbar({text: 'Task saved successfully', color: 'success'});
-      } catch (error) {
-        this.showSnackbar({text: 'Something went wrong.', color: 'error'});
-      } finally {
-        this.saving = false;
-      }
     },
   },
 }
