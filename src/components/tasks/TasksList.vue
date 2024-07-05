@@ -16,38 +16,15 @@
       <ProgressBar v-if="loading"/>
 
       <div v-if="tasks && tasks.length > 0">
-        <div v-for="task in tasks" :key="task.id" class="task-item">
-          <span :class="{ completed: task.completed }">{{ task.title }}</span>
-          <div>
-            <v-tooltip top>
-              <template v-slot:activator="{ on, attrs }">
-                <span v-on="on">
-                  <span
-                      @click="completeTask(task.id)"
-                      class="btn btn-complete"
-                      :class="{ 'disabled': task.completed }"
-                      v-bind="attrs"
-                      :aria-disabled="task.completed ? 'true' : 'false'">
-                        <i class="ph ph-check"></i>
-                  </span>
-                </span>
-              </template>
-              <span class="tooltip-size">
-                {{ task.completed ? 'This task is already completed' : 'Complete task' }}
-              </span>
-            </v-tooltip>
-
-            <v-tooltip top>
-              <template v-slot:activator="{ on, attrs }">
-              <span @click="openConfirmDialog(task.id)" class="btn btn-delete" v-bind="attrs" v-on="on">
-                <i class="ph ph-trash"></i>
-              </span>
-              </template>
-              <span class="tooltip-size">Delete task</span>
-            </v-tooltip>
-          </div>
-        </div>
+        <TasksListItem
+            v-for="task in tasks"
+            :key="task.id"
+            :task="task"
+            @complete-task="completeTask"
+            @delete-task="openConfirmDialog"
+        />
       </div>
+
       <div v-else>
         <template v-if="!loading">
           Your to-do list is empty. Add a new task to start organizing your to-dos.
@@ -81,10 +58,11 @@ import {mapActions} from "vuex";
 import ProgressBar from "@/components/global/ProgressBar.vue";
 import ConfirmDialog from "@/components/dialogs/ConfirmDialog.vue";
 import NewTaskDialog from "@/components/dialogs/NewTaskDialog.vue";
+import TasksListItem from "@/components/tasks/TasksListItem.vue";
 
 export default {
   name: 'TasksList',
-  components: {NewTaskDialog, ConfirmDialog, ProgressBar},
+  components: {TasksListItem, NewTaskDialog, ConfirmDialog, ProgressBar},
   data() {
     return {
       tasks: [],
@@ -94,6 +72,7 @@ export default {
       confirmDialog: false,
       newTaskDialog: false,
       newTaskTitle: '',
+      counter: 0,
       snackbar: {
         visible: false,
         message: '',
@@ -174,12 +153,18 @@ export default {
     },
 
     addTaskToList(taskTitle) {
+      const id = this.generateId();
       const newTask = {
-        id: Date.now(),
+        id: id,
         title: taskTitle,
         completed: false,
       };
       this.tasks.push(newTask);
+      this.counter++;
+    },
+
+    generateId() {
+      return 10 + this.counter + 1;
     },
 
     openConfirmDialog(taskId) {
@@ -218,35 +203,6 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.task-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.8rem 1.2rem;
-  margin-bottom: 0.5rem;
-  background: #fff;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: background 0.3s ease, transform 0.3s ease;
-  word-break: break-all;
-}
-
-.task-item:hover {
-  background: #e0e0e0;
-  transform: scale(1.02);
-}
-
-.task-item span {
-  flex: 1;
-  font-size: 1rem;
-  color: #333;
-}
-
-.task-item span.completed {
-  text-decoration: line-through;
-  color: #888;
-}
-
 .tasks-heading {
   font-size: 16px;
   font-weight: 800;
@@ -268,22 +224,6 @@ export default {
   i {
     font-size: 24px;
   }
-}
-
-.btn-complete {
-  color: #4caf50;
-}
-
-.btn-complete:hover {
-  color: #388e3c;
-}
-
-.btn-delete {
-  color: #f44336;
-}
-
-.btn-delete:hover {
-  color: #c62828;
 }
 
 .btn-plus {
