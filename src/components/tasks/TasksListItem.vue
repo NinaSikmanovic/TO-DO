@@ -53,6 +53,7 @@ export default {
 </script>
 
 <style scoped>
+
 .task-item {
   display: flex;
   align-items: center;
@@ -116,4 +117,5 @@ export default {
 .tooltip-size {
   font-size: 12px;
 }
+
 </style>

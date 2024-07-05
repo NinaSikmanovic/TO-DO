@@ -106,10 +106,7 @@ export default {
       }
       TasksService.completeTask(body)
           .then(() => {
-            const task = this.tasks.find(task => task.id === id);
-            if (task) {
-              task.completed = !task.completed;
-            }
+            this.updateTaskCompletionStatus(id);
             this.sortTasks();
           })
           .catch(() => {
@@ -161,6 +158,13 @@ export default {
       };
       this.tasks.push(newTask);
       this.counter++;
+    },
+
+    updateTaskCompletionStatus(id) {
+      const task = this.tasks.find(task => task.id === id);
+      if (task) {
+        task.completed = !task.completed;
+      }
     },
 
     generateId() {
@@ -232,11 +236,6 @@ export default {
 
 .tooltip-size {
   font-size: 12px;
-}
-
-.disabled {
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 </style>
